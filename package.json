@@ -1,5 +1,5 @@
 {
-	"name": "NodejsStarterApp",
+	"name": "watsonwork-sentiment",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
@@ -7,10 +7,10 @@
 	},
 	"dependencies": {
 		"express": "4.13.x",
-		"cfenv": "1.0.x"
+		"request": "^2.74.0"
 	},
 	"repository": {},
 	"engines": {
 		"node": "4.x"
-	} 
+	}
 }
