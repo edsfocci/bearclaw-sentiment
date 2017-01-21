@@ -97,13 +97,27 @@ app.post("/webhook_callback", function(req, res) {
   var messageId = body.messageId;
   var annotationPayload = JSON.parse(body.annotationPayload);
 
+  // if (annotationType === "message-nlp-docSentiment") {
+  //   var docSentiment = annotationPayload.docSentiment;
+  //   msgTitle = "Sentiment Analysis";
+  //   if (docSentiment.type === "negative" && docSentiment.score < -0.50) {
+  //     msgText = " is being negative (" + docSentiment.score + ")";
+  //   } else if (docSentiment.type === "positive" && docSentiment.score > 0.50) {
+  //     msgText = " seems very happy ! (" + docSentiment.score + ")";
+  //   } else {
+  //     // If the person is neither happy nor sad then assume neutral and just return
+  //     return;
+  //   }
+  // } else {
+  //     // Skip analysis we are not interested in
+  //     return;
+  // }
+
   if (annotationType === "message-nlp-docSentiment") {
     var docSentiment = annotationPayload.docSentiment;
     msgTitle = "Sentiment Analysis";
-    if (docSentiment.type === "negative" && docSentiment.score < -0.50) {
+    if (docSentiment.type === "negative" && docSentiment.score < 0.0) {
       msgText = " is being negative (" + docSentiment.score + ")";
-    } else if (docSentiment.type === "positive" && docSentiment.score > 0.50) {
-      msgText = " seems very happy ! (" + docSentiment.score + ")";
     } else {
       // If the person is neither happy nor sad then assume neutral and just return
       return;
@@ -157,7 +171,8 @@ app.post("/webhook_callback", function(req, res) {
           var person = bodyParsed.data.message.createdBy;
 					memberId = person.id;
           memberName = person.displayName;
-          msgText = memberName + msgText;
+        //   msgText = memberName + msgText;
+          msgText = 'Why did the chicken cross the road?';
 
       } else {
           console.log("ERROR: Can't retrieve " + GraphQLOptions.body + " status:" + response.statusCode);
