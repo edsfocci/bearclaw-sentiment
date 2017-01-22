@@ -141,48 +141,68 @@ app.post("/webhook_callback", function(req, res) {
         if (err)
           console.log(err);
         else {
-          console.log(JSON.stringify(tone, null, 2));
+          // console.log(JSON.stringify(tone, null, 2));
 
-          var docSentiment = annotationPayload.docSentiment;
-          msgTitle = "Sentiment Analysis";
-          if (docSentiment.type === 'negative') {
-            if (docSentiment.score < -0.85)
-              msgText = JSON.stringify(tone);
-              // msgText = 'Want some cheese with your wine?';
-            else if (docSentiment.score < -0.80)
-              msgText = JSON.stringify(tone);
-              // msgText = 'Sounds like you could use a drink.';
-            else if (docSentiment.score < -0.50) {
-              msgText = JSON.stringify(tone + "\n");
-              var joke = jokes[Math.floor(Math.random() * jokes.length)];
-              msgText += joke[0];
-            } else
-              return;
+          // var docSentiment = annotationPayload.docSentiment;
+          // msgTitle = "Sentiment Analysis";
+          // if (docSentiment.type === 'negative') {
+          //   if (docSentiment.score < -0.85)
+          //     msgText = 'Want some cheese with your wine?';
+          //   else if (docSentiment.score < -0.80)
+          //     msgText = 'Sounds like you could use a drink.';
+          //   else if (docSentiment.score < -0.50) {
+          //     var joke = jokes[Math.floor(Math.random() * jokes.length)];
+          //     msgText = joke[0];
+          //   } else
+          //     return;
+          //
+          //   // msgText += " (" + docSentiment.score + ")";
+          //
+          //   if (docSentiment.score < -0.85)
+          //     msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
+          //   else if (docSentiment.score < -0.80)
+          //     msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
+          // } else if (docSentiment.type === 'positive') {
+          //   if (docSentiment.score > 0.80)
+          //     msgText = 'Want a cookie?';
+          //   else if (docSentiment.score > 0.50)
+          //     msgText = " seems very happy !";
+          //   else
+          //     return;
+          //
+          //   // msgText += " (" + docSentiment.score + ")";
+          //
+          //   if (docSentiment.score > 0.80)
+          //     msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
+          // } else {
+          //   // If the person is neither happy nor sad then assume neutral and just return
+          //   return;
+          // }
 
-            msgText += " (" + docSentiment.score + ")";
+          var disgust = tone.documenttone.tonecategories[0].tones[1];
+          var fear = tone.documenttone.tonecategories[0].tones[2];
+          var joy = tone.documenttone.tonecategories[0].tones[3];
+          var sadness = tone.documenttone.tonecategories[0].tones[4];
 
-            if (docSentiment.score < -0.85)
+          switch (true) {
+            case disgust > 0.75:
+              msgText = 'Want some cheese with your wine?';
               msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
-            else if (docSentiment.score < -0.80)
-              msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
-          } else if (docSentiment.type === 'positive') {
-            if (docSentiment.score > 0.80)
-              msgText = JSON.stringify(tone);
-              // msgText = 'Want a cookie?';
-            else if (docSentiment.score > 0.50)
-              msgText = " seems very happy !";
-            else
-              return;
-
-            msgText += " (" + docSentiment.score + ")";
-
-            if (docSentiment.score > 0.80)
+              break;
+            case fear > 0.75:
+              var joke = jokes[Math.floor(Math.random() * jokes.length)];
+              msgText = joke[0];
+              break;
+            case joy > 0.75:
+              msgText = 'Want a cookie?';
               msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
-            else if (docSentiment.score > 0.50)
-              msgText += "\n" + JSON.stringify(tone);
-          } else {
-            // If the person is neither happy nor sad then assume neutral and just return
-            return;
+              break;
+            case sadness > 0.75:
+              msgText = 'Sounds like you could use a drink.';
+              msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
+              break;
+            default:
+              return;
           }
 
 
@@ -230,8 +250,8 @@ app.post("/webhook_callback", function(req, res) {
                 var person = bodyParsed.data.message.createdBy;
                 memberId = person.id;
                 memberName = person.displayName;
-                if (docSentiment.score > 0.50 && docSentiment.score < 0.80)
-                  msgText = memberName + msgText;
+                // if (docSentiment.score > 0.50 && docSentiment.score < 0.80)
+                //   msgText = memberName + msgText;
 
               } else {
                 console.log("ERROR: Can't retrieve " + GraphQLOptions.body + " status:" + response.statusCode);
@@ -271,7 +291,8 @@ app.post("/webhook_callback", function(req, res) {
 
                 sendMessage(sendMessageOptions);
 
-                if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
+                if (fear > 0.75) {
+                // if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
                   appMessage.annotations[0].text = joke[1];
                   sendMessageOptions.body = JSON.stringify(appMessage);
 
