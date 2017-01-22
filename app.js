@@ -179,21 +179,27 @@ app.post("/webhook_callback", function(req, res) {
           //   return;
           // }
 
-          console.log(Object.keys(tone));
+          console.log(Object.keys(tone.document_tone));
 
-          var disgust = tone.documenttone.tonecategories[0].tones[1];
-          var fear = tone.documenttone.tonecategories[0].tones[2];
-          var joy = tone.documenttone.tonecategories[0].tones[3];
-          var sadness = tone.documenttone.tonecategories[0].tones[4];
+          var anger = tone.document_tone.tone_categories[0].tones[0];
+          var disgust = tone.document_tone.tone_categories[0].tones[1];
+          var fear = tone.document_tone.tone_categories[0].tones[2];
+          var joy = tone.document_tone.tone_categories[0].tones[3];
+          var sadness = tone.document_tone.tone_categories[0].tones[4];
 
           switch (true) {
+            case anger > 0.75:
+              var joke = jokes[Math.floor(Math.random() * jokes.length)];
+              msgText = joke[0];
+              break;
             case disgust > 0.75:
               msgText = 'Want some cheese with your wine?';
               msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
               break;
             case fear > 0.75:
-              var joke = jokes[Math.floor(Math.random() * jokes.length)];
-              msgText = joke[0];
+              msgText = 'Yoda says: ';
+              msgText += '“Fear is the path to the dark side. Fear leads to anger.';
+              msgText += ' Anger leads to hate. Hate leads to suffering.”'
               break;
             case joy > 0.75:
               msgText = 'Want a cookie?';
@@ -293,7 +299,7 @@ app.post("/webhook_callback", function(req, res) {
 
                 sendMessage(sendMessageOptions);
 
-                if (fear > 0.75) {
+                if (anger > 0.75) {
                 // if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
                   appMessage.annotations[0].text = joke[1];
                   sendMessageOptions.body = JSON.stringify(appMessage);
