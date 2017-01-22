@@ -140,150 +140,158 @@ app.post("/webhook_callback", function(req, res) {
       function(err, tone) {
         if (err)
           console.log(err);
-        else
+        else {
           console.log(JSON.stringify(tone, null, 2));
+
+          var docSentiment = annotationPayload.docSentiment;
+          msgTitle = "Sentiment Analysis";
+          if (docSentiment.type === 'negative') {
+            if (docSentiment.score < -0.85)
+              msgText = JSON.stringify(tone);
+              // msgText = 'Want some cheese with your wine?';
+            else if (docSentiment.score < -0.80)
+              msgText = JSON.stringify(tone);
+              // msgText = 'Sounds like you could use a drink.';
+            else if (docSentiment.score < -0.50) {
+              msgText = JSON.stringify(tone + "\n");
+              var joke = jokes[Math.floor(Math.random() * jokes.length)];
+              msgText += joke[0];
+            } else
+              return;
+
+            msgText += " (" + docSentiment.score + ")";
+
+            if (docSentiment.score < -0.85)
+              msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
+            else if (docSentiment.score < -0.80)
+              msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
+          } else if (docSentiment.type === 'positive') {
+            if (docSentiment.score > 0.80)
+              msgText = JSON.stringify(tone);
+              // msgText = 'Want a cookie?';
+            else if (docSentiment.score > 0.50)
+              msgText = " seems very happy !";
+            else
+              return;
+
+            msgText += " (" + docSentiment.score + ")";
+
+            if (docSentiment.score > 0.80)
+              msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
+            else if (docSentiment.score > 0.50)
+              msgText += JSON.stringify("\n" + tone);
+          } else {
+            // If the person is neither happy nor sad then assume neutral and just return
+            return;
+          }
+
+
+          // Build request options for authentication.
+          const authenticationOptions = {
+            "method": "POST",
+            "url": `${WWS_URL}${AUTHORIZATION_API}`,
+            "auth": {
+              "user": APP_ID,
+              "pass": APP_SECRET
+            },
+            "form": {
+              "grant_type": "client_credentials"
+            }
+          };
+
+          request(authenticationOptions, function(err, response, authenticationBody) {
+
+            // If successful authentication, a 200 response code is returned
+            if (response.statusCode !== 200) {
+              // if our app can't authenticate then it must have been disabled.  Just return
+              console.log("ERROR: App can't authenticate");
+              return;
+            }
+            const accessToken = JSON.parse(authenticationBody).access_token;
+
+            const GraphQLOptions = {
+              "url": `${WWS_URL}/graphql`,
+              "headers": {
+                "Content-Type": "application/graphql",
+                "x-graphql-view": "PUBLIC",
+                "jwt": "${jwt}"
+              },
+              "method": "POST",
+              "body": ""
+            };
+
+            GraphQLOptions.headers.jwt = accessToken;
+            GraphQLOptions.body = "{ message (id: \"" + messageId + "\") {createdBy { displayName id}}}";
+
+            request(GraphQLOptions, function(err, response, graphqlbody) {
+
+              if (!err && response.statusCode === 200) {
+                const bodyParsed = JSON.parse(graphqlbody);
+                var person = bodyParsed.data.message.createdBy;
+                memberId = person.id;
+                memberName = person.displayName;
+                if (docSentiment.score > 0.50 && docSentiment.score < 0.80)
+                  msgText = memberName + msgText;
+
+              } else {
+                console.log("ERROR: Can't retrieve " + GraphQLOptions.body + " status:" + response.statusCode);
+                return;
+              }
+
+              // Avoid endless loop of analysis :-)
+              if (memberId !== APP_ID) {
+                const appMessage = {
+                  "type": "appMessage",
+                  "version": "1",
+                  "annotations": [{
+                    "type": "generic",
+                    "version": "1",
+
+                    "title": "",
+                    "text": "",
+                    "color": "#ececec",
+                  }]
+                };
+
+                const sendMessageOptions = {
+                  "url": "https://api.watsonwork.ibm.com/v1/spaces/${space_id}/messages",
+                  "headers": {
+                    "Content-Type": "application/json",
+                    "jwt": ""
+                  },
+                  "method": "POST",
+                  "body": ""
+                };
+
+                sendMessageOptions.url = sendMessageOptions.url.replace("${space_id}", spaceId);
+                sendMessageOptions.headers.jwt = accessToken;
+                // appMessage.annotations[0].title = msgTitle;
+                appMessage.annotations[0].text = msgText;
+                sendMessageOptions.body = JSON.stringify(appMessage);
+
+                sendMessage(sendMessageOptions);
+
+                if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
+                  appMessage.annotations[0].text = joke[1];
+                  sendMessageOptions.body = JSON.stringify(appMessage);
+
+                  setTimeout(function() {
+                    sendMessage(sendMessageOptions);
+                  }, 5000);
+                }
+              }
+              else {
+                console.log("INFO: Skipping sending a message of analysis of our own message " + JSON.stringify(body));
+              }
+            });
+          });
+        }
     });
 
-    var docSentiment = annotationPayload.docSentiment;
-    msgTitle = "Sentiment Analysis";
-    if (docSentiment.type === 'negative') {
-      if (docSentiment.score < -0.85)
-        msgText = annotationPayload.text;
-        // msgText = 'Want some cheese with your wine?';
-      else if (docSentiment.score < -0.80)
-        msgText = 'Sounds like you could use a drink.';
-      else if (docSentiment.score < -0.50) {
-        var joke = jokes[Math.floor(Math.random() * jokes.length)];
-        msgText = joke[0];
-      } else
-        return;
-
-      msgText += " (" + docSentiment.score + ")";
-
-      if (docSentiment.score < -0.85)
-        msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
-      else if (docSentiment.score < -0.80)
-        msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
-    } else if (docSentiment.type === 'positive') {
-      if (docSentiment.score > 0.80)
-        msgText = 'Want a cookie?';
-      else if (docSentiment.score > 0.50)
-        msgText = " seems very happy !";
-      else
-        return;
-
-      msgText += " (" + docSentiment.score + ")";
-
-      if (docSentiment.score > 0.80)
-        msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
-    } else {
-      // If the person is neither happy nor sad then assume neutral and just return
-      return;
-    }
   } else {
     // Skip analysis we are not interested in
     return;
   }
-
-  // Build request options for authentication.
-  const authenticationOptions = {
-    "method": "POST",
-    "url": `${WWS_URL}${AUTHORIZATION_API}`,
-    "auth": {
-      "user": APP_ID,
-      "pass": APP_SECRET
-    },
-    "form": {
-      "grant_type": "client_credentials"
-    }
-  };
-
-  request(authenticationOptions, function(err, response, authenticationBody) {
-
-    // If successful authentication, a 200 response code is returned
-    if (response.statusCode !== 200) {
-      // if our app can't authenticate then it must have been disabled.  Just return
-      console.log("ERROR: App can't authenticate");
-      return;
-    }
-    const accessToken = JSON.parse(authenticationBody).access_token;
-
-    const GraphQLOptions = {
-      "url": `${WWS_URL}/graphql`,
-      "headers": {
-        "Content-Type": "application/graphql",
-        "x-graphql-view": "PUBLIC",
-        "jwt": "${jwt}"
-      },
-      "method": "POST",
-      "body": ""
-    };
-
-    GraphQLOptions.headers.jwt = accessToken;
-    GraphQLOptions.body = "{ message (id: \"" + messageId + "\") {createdBy { displayName id}}}";
-
-    request(GraphQLOptions, function(err, response, graphqlbody) {
-
-      if (!err && response.statusCode === 200) {
-        const bodyParsed = JSON.parse(graphqlbody);
-        var person = bodyParsed.data.message.createdBy;
-        memberId = person.id;
-        memberName = person.displayName;
-        if (docSentiment.score > 0.50 && docSentiment.score < 0.80)
-          msgText = memberName + msgText;
-
-      } else {
-        console.log("ERROR: Can't retrieve " + GraphQLOptions.body + " status:" + response.statusCode);
-        return;
-      }
-
-      // Avoid endless loop of analysis :-)
-      if (memberId !== APP_ID) {
-        const appMessage = {
-          "type": "appMessage",
-          "version": "1",
-          "annotations": [{
-            "type": "generic",
-            "version": "1",
-
-            "title": "",
-            "text": "",
-            "color": "#ececec",
-          }]
-        };
-
-        const sendMessageOptions = {
-          "url": "https://api.watsonwork.ibm.com/v1/spaces/${space_id}/messages",
-          "headers": {
-            "Content-Type": "application/json",
-            "jwt": ""
-          },
-          "method": "POST",
-          "body": ""
-        };
-
-        sendMessageOptions.url = sendMessageOptions.url.replace("${space_id}", spaceId);
-        sendMessageOptions.headers.jwt = accessToken;
-        // appMessage.annotations[0].title = msgTitle;
-        appMessage.annotations[0].text = msgText;
-        sendMessageOptions.body = JSON.stringify(appMessage);
-
-        sendMessage(sendMessageOptions);
-
-        if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
-          appMessage.annotations[0].text = joke[1];
-          sendMessageOptions.body = JSON.stringify(appMessage);
-
-          setTimeout(function() {
-            sendMessage(sendMessageOptions);
-          }, 5000);
-        }
-      }
-      else {
-        console.log("INFO: Skipping sending a message of analysis of our own message " + JSON.stringify(body));
-      }
-    });
-  });
 });
 
 
