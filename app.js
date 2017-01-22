@@ -181,11 +181,11 @@ app.post("/webhook_callback", function(req, res) {
 
           console.log(Object.keys(tone.document_tone));
 
-          var anger = tone.document_tone.tone_categories[0].tones[0];
-          var disgust = tone.document_tone.tone_categories[0].tones[1];
-          var fear = tone.document_tone.tone_categories[0].tones[2];
-          var joy = tone.document_tone.tone_categories[0].tones[3];
-          var sadness = tone.document_tone.tone_categories[0].tones[4];
+          var anger = tone.document_tone.tone_categories[0].tones[0].score;
+          var disgust = tone.document_tone.tone_categories[0].tones[1].score;
+          var fear = tone.document_tone.tone_categories[0].tones[2].score;
+          var joy = tone.document_tone.tone_categories[0].tones[3].score;
+          var sadness = tone.document_tone.tone_categories[0].tones[4].score;
 
           switch (true) {
             case anger > 0.75:
