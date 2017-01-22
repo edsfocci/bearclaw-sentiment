@@ -127,22 +127,22 @@ app.post("/webhook_callback", function(req, res) {
   ];
 
   if (annotationType === "message-nlp-docSentiment") {
-    // var watson = require('watson-developer-cloud');
-    //
-    // var tone_analyzer = watson.tone_analyzer({
-    //   username: process.env.TONE_ID,
-    //   password: process.env.TONE_SECRET,
-    //   version: 'v3',
-    //   version_date: '2016-05-19 '
-    // });
-    //
-    // tone_analyzer.tone({ text: 'A word is dead when it is said, some say. Emily Dickinson' },
-    //   function(err, tone) {
-    //     if (err)
-    //       console.log(err);
-    //     else
-    //       console.log(JSON.stringify(tone, null, 2));
-    // });
+    var watson = require('watson-developer-cloud');
+
+    var tone_analyzer = watson.tone_analyzer({
+      username: process.env.TONE_ID,
+      password: process.env.TONE_SECRET,
+      version: 'v3',
+      version_date: '2016-05-19 '
+    });
+
+    tone_analyzer.tone({ text: body.content },
+      function(err, tone) {
+        if (err)
+          console.log(err);
+        else
+          console.log(JSON.stringify(tone, null, 2));
+    });
 
     var docSentiment = annotationPayload.docSentiment;
     msgTitle = "Sentiment Analysis";
