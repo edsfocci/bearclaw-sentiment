@@ -179,8 +179,7 @@ app.post("/webhook_callback", function(req, res) {
           //   return;
           // }
 
-          console.log(typeof tone);
-          console.log(tone.keys());
+          console.log(Object.keys(tone));
 
           var disgust = tone.documenttone.tonecategories[0].tones[1];
           var fear = tone.documenttone.tonecategories[0].tones[2];
