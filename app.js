@@ -148,7 +148,7 @@ app.post("/webhook_callback", function(req, res) {
     msgTitle = "Sentiment Analysis";
     if (docSentiment.type === 'negative') {
       if (docSentiment.score < -0.85)
-        msgText = body;
+        msgText = body.content;
         // msgText = 'Want some cheese with your wine?';
       else if (docSentiment.score < -0.80)
         msgText = 'Sounds like you could use a drink.';
