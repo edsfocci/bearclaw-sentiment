@@ -116,10 +116,32 @@ app.post("/webhook_callback", function(req, res) {
   if (annotationType === "message-nlp-docSentiment") {
     var docSentiment = annotationPayload.docSentiment;
     msgTitle = "Sentiment Analysis";
-    if (docSentiment.type === "negative" && docSentiment.score < 0.0) {
-      msgText = " (" + docSentiment.score + ")";
-    } else if (docSentiment.type === "positive" && docSentiment.score > 0.50) {
-      msgText = " seems very happy ! (" + docSentiment.score + ")";
+    if (docSentiment.type === 'negative') {
+      if (docSentiment.score < -0.85)
+        msgText = 'Want some cheese with your wine?';
+      else if (docSentiment.score < -0.80)
+        msgText = 'Sounds like you could use a drink.';
+      else if (docSentiment.score < -0.50)
+        msgText = 'Why did the chicken cross the road?';
+      else
+        return;
+
+      msgText += " (" + docSentiment.score + ")";
+
+      if (docSentiment.score < -0.85)
+        msgText += "\nAre y'all interested in drinking at Max's Wine Dive?";
+      else if (docSentiment.score < -0.80)
+        msgText += "\nAre y'all interested in drinking at Buffalo Billiards?";
+    } else if (docSentiment.type === 'positive') {
+      if (docSentiment.score > 0.80)
+        msgText = 'Want a cookie?';
+      else if (docSentiment.score > 0.50)
+        msgText = " seems very happy !";
+
+      msgText += " (" + docSentiment.score + ")";
+
+      else if (docSentiment.score > 0.80)
+        msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
     } else {
       // If the person is neither happy nor sad then assume neutral and just return
       return;
@@ -173,10 +195,8 @@ app.post("/webhook_callback", function(req, res) {
         var person = bodyParsed.data.message.createdBy;
         memberId = person.id;
         memberName = person.displayName;
-        if (docSentiment.score > 0.50)
+        if (docSentiment.score > 0.50 && docSentiment.score < 0.80)
           msgText = memberName + msgText;
-        else
-          msgText = 'Why did the chicken cross the road?' + msgText;
 
       } else {
         console.log("ERROR: Can't retrieve " + GraphQLOptions.body + " status:" + response.statusCode);
@@ -216,7 +236,7 @@ app.post("/webhook_callback", function(req, res) {
 
         sendMessage(sendMessageOptions);
 
-        if (docSentiment.score < 0.0) {
+        if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
           appMessage.annotations[0].text = 'To get to the other side.';
           sendMessageOptions.body = JSON.stringify(appMessage);
         }
