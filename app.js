@@ -136,7 +136,7 @@ app.post("/webhook_callback", function(req, res) {
       version_date: '2016-05-19 '
     });
 
-    tone_analyzer.tone({ text: body.text },
+    tone_analyzer.tone({ text: annotationPayload.text },
       function(err, tone) {
         if (err)
           console.log(err);
@@ -148,7 +148,7 @@ app.post("/webhook_callback", function(req, res) {
     msgTitle = "Sentiment Analysis";
     if (docSentiment.type === 'negative') {
       if (docSentiment.score < -0.85)
-        msgText = body.text;
+        msgText = annotationPayload.text;
         // msgText = 'Want some cheese with your wine?';
       else if (docSentiment.score < -0.80)
         msgText = 'Sounds like you could use a drink.';
