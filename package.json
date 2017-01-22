@@ -7,7 +7,8 @@
 	},
 	"dependencies": {
 		"express": "4.13.x",
-		"request": "^2.74.0"
+		"request": "^2.74.0",
+		"watson-developer-cloud": "2.15.2"
 	},
 	"repository": {},
 	"engines": {
