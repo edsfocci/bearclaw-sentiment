@@ -113,6 +113,19 @@ app.post("/webhook_callback", function(req, res) {
   //     return;
   // }
 
+  var jokes = [
+    ['What do you call a group of unorganized cats?',
+    'A CAT- astrophe!'],
+    ["Why don't they play poker in the jungle?",
+    'Too many cheetahs!'],
+    ['What did the duck say to the bartender?',
+    'Put it on my bill!'],
+    ['I wonder why the baseball was getting bigger...',
+    'then it hit me!'],
+    ['I am reading a book about anti-gravity',
+    'it is impossible to put down!']
+  ];
+
   if (annotationType === "message-nlp-docSentiment") {
     var docSentiment = annotationPayload.docSentiment;
     msgTitle = "Sentiment Analysis";
@@ -121,9 +134,10 @@ app.post("/webhook_callback", function(req, res) {
         msgText = 'Want some cheese with your wine?';
       else if (docSentiment.score < -0.80)
         msgText = 'Sounds like you could use a drink.';
-      else if (docSentiment.score < -0.50)
-        msgText = 'Why did the chicken cross the road?';
-      else
+      else if (docSentiment.score < -0.50) {
+        var joke = jokes[Math.floor(Math.random() * jokes.length)];
+        msgText = joke[0];
+      } else
         return;
 
       msgText += " (" + docSentiment.score + ")";
@@ -239,7 +253,7 @@ app.post("/webhook_callback", function(req, res) {
         sendMessage(sendMessageOptions);
 
         if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
-          appMessage.annotations[0].text = 'To get to the other side.';
+          appMessage.annotations[0].text = joke[1];
           sendMessageOptions.body = JSON.stringify(appMessage);
 
           setTimeout(function() {
