@@ -239,11 +239,11 @@ app.post("/webhook_callback", function(req, res) {
         if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
           appMessage.annotations[0].text = 'To get to the other side.';
           sendMessageOptions.body = JSON.stringify(appMessage);
-        }
 
-        setTimeout(function() {
-          sendMessage(sendMessageOptions);
-        }, 5000);
+          setTimeout(function() {
+            sendMessage(sendMessageOptions);
+          }, 5000);
+        }
       }
       else {
         console.log("INFO: Skipping sending a message of analysis of our own message " + JSON.stringify(body));
