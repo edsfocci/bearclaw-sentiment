@@ -210,11 +210,20 @@ app.post("/webhook_callback", function(req, res) {
 
         sendMessageOptions.url = sendMessageOptions.url.replace("${space_id}", spaceId);
         sendMessageOptions.headers.jwt = accessToken;
-        appMessage.annotations[0].title = msgTitle;
+        // appMessage.annotations[0].title = msgTitle;
         appMessage.annotations[0].text = msgText;
         sendMessageOptions.body = JSON.stringify(appMessage);
 
         sendMessage(sendMessageOptions);
+
+        if (docSentiment.score < 0.0) {
+          appMessage.annotations[0].text = 'To get to the other side.';
+          sendMessageOptions.body = JSON.stringify(appMessage);
+        }
+
+        setTimeout(function() {
+          sendMessage(sendMessageOptions);
+        }, 5000);
       }
       else {
         console.log("INFO: Skipping sending a message of analysis of our own message " + JSON.stringify(body));
