@@ -214,13 +214,7 @@ app.post("/webhook_callback", function(req, res) {
         appMessage.annotations[0].text = msgText;
         sendMessageOptions.body = JSON.stringify(appMessage);
 
-        request(sendMessageOptions, function(err, response, sendMessageBody) {
-
-          if (err || response.statusCode !== 201) {
-            console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
-          }
-
-        });
+        sendMessage(sendMessageOptions);
       }
       else {
         console.log("INFO: Skipping sending a message of analysis of our own message " + JSON.stringify(body));
@@ -230,6 +224,16 @@ app.post("/webhook_callback", function(req, res) {
 });
 
 
+
+function sendMessage(messageOptions) {
+  request(messageOptions, function(err, response, sendMessageBody) {
+
+    if (err || response.statusCode !== 201) {
+      console.log("ERROR: Posting to " + messageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
+    }
+
+  });
+}
 
 function verifySender(headers, rawbody) {
   var headerToken = headers[WEBHOOK_VERIFICATION_TOKEN_HEADER];
