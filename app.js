@@ -129,9 +129,9 @@ app.post("/webhook_callback", function(req, res) {
       msgText += " (" + docSentiment.score + ")";
 
       if (docSentiment.score < -0.85)
-        msgText += "\nAre y'all interested in drinking at Max's Wine Dive?";
+        msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
       else if (docSentiment.score < -0.80)
-        msgText += "\nAre y'all interested in drinking at Buffalo Billiards?";
+        msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
     } else if (docSentiment.type === 'positive') {
       if (docSentiment.score > 0.80)
         msgText = 'Want a cookie?';
