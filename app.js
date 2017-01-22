@@ -188,24 +188,24 @@ app.post("/webhook_callback", function(req, res) {
           var sadness = tone.document_tone.tone_categories[0].tones[4].score;
 
           switch (true) {
-            case anger > 0.75:
+            case anger > 0.65:
               var joke = jokes[Math.floor(Math.random() * jokes.length)];
               msgText = joke[0];
               break;
-            case disgust > 0.75:
+            case disgust > 0.65:
               msgText = 'Want some cheese with your wine?';
               msgText += "\nAre y'all interested in a drink at Max's Wine Dive?";
               break;
-            case fear > 0.75:
+            case fear > 0.65:
               msgText = 'Yoda says: ';
               msgText += '“Fear is the path to the dark side. Fear leads to anger.';
               msgText += ' Anger leads to hate. Hate leads to suffering.”'
               break;
-            case joy > 0.75:
+            case joy > 0.65:
               msgText = 'Want a cookie?';
               msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
               break;
-            case sadness > 0.75:
+            case sadness > 0.65:
               msgText = 'Sounds like you could use a drink.';
               msgText += "\nAre y'all interested in a drink at Buffalo Billiards?";
               break;
@@ -299,7 +299,7 @@ app.post("/webhook_callback", function(req, res) {
 
                 sendMessage(sendMessageOptions);
 
-                if (anger > 0.75) {
+                if (anger > 0.65) {
                 // if (docSentiment.score < -0.50 && docSentiment.score > -0.80) {
                   appMessage.annotations[0].text = joke[1];
                   sendMessageOptions.body = JSON.stringify(appMessage);
