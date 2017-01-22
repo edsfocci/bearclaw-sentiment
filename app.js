@@ -179,7 +179,7 @@ app.post("/webhook_callback", function(req, res) {
             if (docSentiment.score > 0.80)
               msgText += "\nAre y'all interested in eating at Voodoo Doughnut?";
             else if (docSentiment.score > 0.50)
-              msgText += JSON.stringify("\n" + tone);
+              msgText += "\n" + JSON.stringify(tone);
           } else {
             // If the person is neither happy nor sad then assume neutral and just return
             return;
